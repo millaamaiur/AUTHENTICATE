@@ -50,7 +50,13 @@ public class UsuariosController {
             @PathVariable String idTrabajador,
             @RequestBody UsuarioDTO datos) {
 
-        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+        boolean resultado = usuariosService.modificarUsuario(idTrabajador, datos);
+
+        if (resultado) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @GetMapping("/{idTrabajador}")
@@ -69,6 +75,8 @@ public class UsuariosController {
     @GetMapping()
     public ResponseEntity<List<UsuarioDTO>> consultarUsuarios() {
 
-        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+        List<UsuarioDTO> usuarios = usuariosService.consultarUsuarios();
+
+        return new ResponseEntity<>(usuarios, HttpStatus.OK);
     }
 }
