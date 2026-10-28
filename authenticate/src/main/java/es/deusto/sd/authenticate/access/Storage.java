@@ -35,27 +35,28 @@ public class Storage {
     // ------------------------------------------------------------------
     private void cargarDatosPrueba() {
 
-        // TODO: cuando Usuario tenga fecha de alta / baja, rellenarlas según los comentarios
+        // ---------------- USUARIOS ----------------
+        // fecBaja = null -> usuario activo (estado = true)
 
         // Activa desde antes del rango
-        // alta: 2026-09-01 | baja: -
-        añadirUsuario(new Usuario("Ane", "Etxeberria Lasa", "11111111A", "TRA001", "VB-0001"));
+        añadirUsuario("Ane", "Etxeberria Lasa", "11111111A", "TRA001", "VB-0001",
+                "2026-09-01T09:00", null);
 
         // Alta DENTRO del rango -> debe salir en el listado de altas
-        // alta: 2026-10-06 | baja: -
-        añadirUsuario(new Usuario("Jon", "Garmendia Arrieta", "22222222B", "TRA002", "VB-0002"));
+        añadirUsuario("Jon", "Garmendia Arrieta", "22222222B", "TRA002", "VB-0002",
+                "2026-10-06T09:00", null);
 
         // Baja DENTRO del rango -> debe salir en el listado de bajas
-        // alta: 2026-03-01 | baja: 2026-10-08
-        añadirUsuario(new Usuario("Miren", "Aguirre Zubia", "33333333C", "TRA003", "VB-0003"));
+        añadirUsuario("Miren", "Aguirre Zubia", "33333333C", "TRA003", "VB-0003",
+                "2026-03-01T09:00", "2026-10-08T12:00");
 
         // Baja ANTES del rango -> no sale en altas, ni bajas, ni fichajes correctos
-        // alta: 2025-01-15 | baja: 2026-09-15
-        añadirUsuario(new Usuario("Iker", "Lasa Otegi", "44444444D", "TRA004", "VB-0004"));
+        añadirUsuario("Iker", "Lasa Otegi", "44444444D", "TRA004", "VB-0004",
+                "2025-01-15T09:00", "2026-09-15T12:00");
 
         // Activa, con un día de 3 eventos (caso a decidir)
-        // alta: 2026-02-01 | baja: -
-        añadirUsuario(new Usuario("Leire", "Otegi Mendizabal", "55555555E", "TRA005", "VB-0005"));
+        añadirUsuario("Leire", "Otegi Mendizabal", "55555555E", "TRA005", "VB-0005",
+                "2026-02-01T09:00", null);
 
         // ---------------- FICHAJES ----------------
 
@@ -92,8 +93,19 @@ public class Storage {
         añadirFichaje("TRA005", "ED02", "PU06", "2026-10-06T16:15");
     }
 
-    private void añadirUsuario(Usuario usuario) {
-        usuarios.put(usuario.getIdTrabajador(), usuario);
+    private void añadirUsuario(String nombre, String apellidos, String dni, String idTrabajador,
+            String vectorBiometrico, String fecAlta, String fecBaja) {
+
+        boolean activo = (fecBaja == null);
+
+        Usuario usuario = new Usuario(nombre, apellidos, dni, idTrabajador, vectorBiometrico,
+                LocalDateTime.parse(fecAlta), activo);
+
+        if (!activo) {
+            usuario.setFecBaja(LocalDateTime.parse(fecBaja));
+        }
+
+        usuarios.put(idTrabajador, usuario);
     }
 
     private void añadirFichaje(String idTrabajador, String idEdificio, String idPuerta, String timestamp) {
