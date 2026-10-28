@@ -26,5 +26,5 @@ public class AccesoDatosCentral {
     return Optional.ofNullable(
         storage.getUsuarios().get(idTrabajador)
     );
-}
+    }
 }

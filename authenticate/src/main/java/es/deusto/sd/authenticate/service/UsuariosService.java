@@ -1,5 +1,6 @@
 package es.deusto.sd.authenticate.service;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -30,11 +31,32 @@ public class UsuariosService {
                 usuario.getApellidos(),
                 usuario.getDni(),
                 usuario.getIdTrabajador(),
-                usuario.getVectorBiometrico());
+                usuario.getVectorBiometrico(),
+                LocalDateTime.now(),
+                true)
+                ;
 
         accesoDatos.guardarUsuario(nuevoUsuario);
 
         return true;
+    }
+
+    public boolean bajaUsuario(String idTrabajador) {
+
+        Optional<Usuario> usuarioExis = accesoDatos.obtenerUsuario(idTrabajador);
+
+        if (usuarioExis.isPresent()) {
+
+            Usuario u = usuarioExis.get();
+            u.setEstado(false);
+            u.setFecBaja(LocalDateTime.now());
+
+            accesoDatos.guardarUsuario(u);
+
+            return true;
+        }
+
+        return false;
     }
 
     public UsuarioDTO consultarUsuario(String idTrabajador) {
