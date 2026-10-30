@@ -3,7 +3,6 @@ package es.deusto.sd.authenticate.access;
 import java.util.Optional;
 import java.util.Map;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,9 +41,18 @@ public class AccesoDatosCentral {
         storage.getFichajes().add(fichaje);
     }
 
-    public Optional<List<Fichaje>> obtenerFichajes(String idTrabajador, LocalDateTime dia) {
-        return Optional.ofNullable(
-                storage.getFichajes());
+    public List<Fichaje> obtenerFichajes(String idTrabajador, LocalDate dia) {
+        List<Fichaje> resultado = new ArrayList<>();
+
+        for(Fichaje f : storage.getFichajes()){
+            boolean condId = f.getIdTrabajador().equals(idTrabajador);
+            boolean condDia = dia.equals(f.getTimestamp().toLocalDate());
+
+            if(condDia && condId){
+                resultado.add(f);
+            }
+        }
+        return resultado;
     }
 
     public List<Fichaje> obtenerFichajesEntre(LocalDate inicio, LocalDate fin) {
