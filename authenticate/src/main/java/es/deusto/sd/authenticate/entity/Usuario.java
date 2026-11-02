@@ -10,22 +10,19 @@ public class Usuario {
     private String idTrabajador;
     private String vectorBiometrico;
     private LocalDateTime fecAlta;
-    private LocalDateTime fecBaja;
-    private boolean estado;
 
     public Usuario() {
 
     }
 
     public Usuario(String nombre, String apellidos, String dni, String idTrabajador, String vectorBiometrico,
-            LocalDateTime fecAlta, boolean estado) {
+            LocalDateTime fecAlta) {
         this.nombre = nombre;
         this.apellidos = apellidos;
         this.dni = dni;
         this.idTrabajador = idTrabajador;
         this.vectorBiometrico = vectorBiometrico;
         this.fecAlta = fecAlta;
-        this.estado = estado;
     }
 
     public String getNombre() {
@@ -74,21 +71,5 @@ public class Usuario {
 
     public void setFecAlta(LocalDateTime fecAlta) {
         this.fecAlta = fecAlta;
-    }
-
-    public LocalDateTime getFecBaja() {
-        return fecBaja;
-    }
-
-    public void setFecBaja(LocalDateTime fecBaja) {
-        this.fecBaja = fecBaja;
-    }
-
-    public boolean isEstado() {
-        return estado;
-    }
-
-    public void setEstado(boolean estado) {
-        this.estado = estado;
     }
 }
