@@ -1,9 +1,10 @@
 package es.deusto.sd.authenticate.service;
+
 import es.deusto.sd.authenticate.access.AccesoDatosCentral;
 import es.deusto.sd.authenticate.dto.FichajeDTO;
 import es.deusto.sd.authenticate.entity.Fichaje;
+import es.deusto.sd.authenticate.entity.TipoFichaje;
 import es.deusto.sd.authenticate.entity.Usuario;
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -24,32 +25,23 @@ public class FichajesService {
             return false;
         }
 
-        Usuario usuario = usuarioOpt.get();
+        // 1.º evento del día = entrada, 2.º = salida; no se admite un tercero
+        int fichajesDelDia = accesoDatos.obtenerFichajes(
+                fichaje.getIdTrabajador(),
+                fichaje.getTimestamp().toLocalDate()).size();
 
-        LocalDateTime timestamp = fichaje.getTimestamp();
-
-        // Fecha de alta del usuario: no puede fichar antes de darse de alta
-        LocalDateTime fecAlta = usuario.getFecAlta();
-        if (fecAlta != null && timestamp.isBefore(fecAlta)) {
+        if (fichajesDelDia >= 2) {
             return false;
         }
 
-        // Tampoco puede fichar después de su fecha de baja
-        LocalDateTime fecBaja = usuario.getFecBaja();
-        if (fecBaja != null && timestamp.isAfter(fecBaja)) {
-            return false;
-        }
-
-        // Y debe estar activo
-        if (!usuario.isEstado()) {
-            return false;
-        }
+        TipoFichaje tipo = fichajesDelDia == 0 ? TipoFichaje.ENTRADA : TipoFichaje.SALIDA;
 
         Fichaje nuevoFichaje = new Fichaje(
                 fichaje.getIdTrabajador(),
                 fichaje.getIdEdificio(),
                 fichaje.getIdPuerta(),
-                timestamp);
+                fichaje.getTimestamp(),
+                tipo);
 
         accesoDatos.guardarFichaje(nuevoFichaje);
 

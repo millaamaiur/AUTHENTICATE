@@ -8,16 +8,27 @@ public class Fichaje {
     private String idEdificio; // ED 5757
     private String idPuerta; // PU 3491
     private LocalDateTime timestamp;
+    private TipoFichaje tipo; // 1.º del día = ENTRADA, 2.º = SALIDA
 
     public Fichaje() {
 
     }
 
-    public Fichaje(String idTrabajador, String idEdificio, String idPuerta, LocalDateTime timestamp) {
+    public Fichaje(String idTrabajador, String idEdificio, String idPuerta, LocalDateTime timestamp,
+            TipoFichaje tipo) {
         this.idTrabajador = idTrabajador;
         this.idEdificio = idEdificio;
         this.idPuerta = idPuerta;
         this.timestamp = timestamp;
+        this.tipo = tipo;
+    }
+
+    public TipoFichaje getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(TipoFichaje tipo) {
+        this.tipo = tipo;
     }
 
     public String getIdTrabajador() {

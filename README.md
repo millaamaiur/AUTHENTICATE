@@ -49,7 +49,7 @@ El servicio central sigue una arquitectura en tres capas. Cada petición atravie
 | Controlador | `facade` | Recibe las peticiones HTTP, llama al servicio y devuelve el código HTTP. Sin lógica de negocio. |
 | Servicio | `service` | Toda la lógica de negocio: validaciones, entrada/salida, cálculo de informes. |
 | Acceso | `access` | Único punto de acceso a los datos. `AccesoDatosCentral` guarda y consulta; `Storage` mantiene los datos en memoria. |
-| Entidades | `entity` | `Usuario` y `Fichaje`: cómo se guardan los datos internamente. |
+| Entidades | `entity` | `Usuario`, `Fichaje` (con `TipoFichaje`: ENTRADA/SALIDA) y `MovimientoUsuario` (con `TipoMovimientoUsuario`: ALTA/BAJA): cómo se guardan los datos internamente. |
 | DTOs | `dto` | `UsuarioDTO`, `FichajeDTO` e `InformeDTO`: lo que viaja por la API. |
 
 En el prototipo 2, `Storage` será sustituido por el servicio de almacenamiento. Solo cambiará el interior de `AccesoDatosCentral`.
@@ -63,7 +63,7 @@ En el prototipo 2, `Storage` será sustituido por el servicio de almacenamiento.
 | Método | Ruta | Descripción | Respuestas |
 |---|---|---|---|
 | `POST` | `/usuarios` | Alta de un usuario | `201` creado · `409` ya existe |
-| `DELETE` | `/usuarios/{idTrabajador}` | Baja de un usuario (no se borra: se marca con fecha de baja) | `204` · `404` no existe |
+| `DELETE` | `/usuarios/{idTrabajador}` | Baja de un usuario (se borra el usuario y se registra un movimiento BAJA) | `204` · `404` no existe |
 | `PUT` | `/usuarios/{idTrabajador}` | Modificación de un usuario | `204` · `404` no existe |
 | `GET` | `/usuarios/{idTrabajador}` | Consulta de un usuario | `200` · `404` no existe |
 | `GET` | `/usuarios` | Lista de todos los usuarios | `200` |
@@ -80,13 +80,13 @@ Ejemplo de alta:
 }
 ```
 
-La fecha de alta la asigna el servidor, no el cliente.
+La fecha de alta la asigna el servidor, no el cliente. El `Usuario` no guarda fechas de alta/baja: como la baja es un `DELETE` real, cada alta y cada baja se registra como un `MovimientoUsuario` (idTrabajador, tipo, fecha) que se conserva aunque el usuario ya no exista. De ahí sale el informe.
 
 ### Fichajes — `/fichajes`
 
 | Método | Ruta | Descripción | Respuestas |
 |---|---|---|---|
-| `POST` | `/fichajes` | Registro de un evento de puerta | `201` válido (abrir puerta) · `409` rechazado |
+| `POST` | `/fichajes` | Registro de un evento de puerta | `201` válido (abrir puerta) · `409` rechazado (usuario inexistente/de baja o ya tiene 2 fichajes ese día) |
 
 ```json
 {
@@ -99,20 +99,21 @@ La fecha de alta la asigna el servidor, no el cliente.
 
 Reglas:
 - Solo se acepta si el usuario existe y está de alta.
-- El 1.º evento del día de un usuario es la **entrada** y el 2.º es la **salida**.
+- El 1.º evento del día de un usuario es la **entrada** y el 2.º es la **salida** (el servidor guarda el tipo en el fichaje).
+- Un 3.º evento en el mismo día se rechaza (`409`).
 
-### Informes — `/informes` *(en desarrollo)*
+### Informes — `/informes?inicio=AAAA-MM-DD&fin=AAAA-MM-DD`
 
 Informe entre dos fechas con:
-- usuarios dados de **alta** en el periodo,
-- usuarios dados de **baja** en el periodo,
-- para cada usuario de alta, número de **fichajes correctos** (2 eventos en el mismo día con ≥ 8 h entre ellos).
+- usuarios dados de **alta** en el periodo (movimientos ALTA),
+- usuarios dados de **baja** en el periodo (movimientos BAJA; el usuario ya no existe, solo se conserva su `idTrabajador`),
+- para cada usuario que sigue de alta, número de **fichajes correctos** (2 eventos en el mismo día con ≥ 8 h entre ellos).
 
 ---
 
 ## Datos de prueba
 
-`Storage` carga al arrancar 5 usuarios y sus fichajes en la semana del **05/10/2026 al 09/10/2026**, pensados para cubrir todos los casos del informe.
+`Storage` carga al arrancar 8 usuarios (6 activos y 2 ya dados de baja), sus movimientos de alta/baja y sus fichajes en la semana del **05/10/2026 al 09/10/2026**, pensados para cubrir todos los casos del informe.
 
 | Usuario | Situación | Fichajes correctos esperados (05–09/10) |
 |---|---|---|
@@ -121,6 +122,9 @@ Informe entre dos fechas con:
 | TRA003 Miren | Baja el 08/10 (dentro del rango) | No aparece: ya no está de alta |
 | TRA004 Iker | Baja el 15/09 (antes del rango) | No aparece en ningún listado |
 | TRA005 Leire | Activa, un día con 3 eventos | 1 (el día de 3 eventos no cuenta) |
+| TRA006 Maialen | Activa, sin fichajes | 0 |
+| TRA007 Unai | Alta el 09/10 (dentro del rango), sin fichajes | 0 |
+| TRA008 Nerea | Activa, un día de exactamente 8 h | 1 |
 
 ---
 
