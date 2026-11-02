@@ -39,8 +39,7 @@ public class UsuariosService {
                 usuario.getApellidos(),
                 usuario.getDni(),
                 usuario.getIdTrabajador(),
-                usuario.getVectorBiometrico(),
-                fechaAlta);
+                usuario.getVectorBiometrico());
 
         accesoDatos.guardarUsuario(nuevoUsuario);
 

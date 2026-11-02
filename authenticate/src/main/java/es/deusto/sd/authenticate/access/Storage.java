@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import es.deusto.sd.authenticate.entity.Fichaje;
 import es.deusto.sd.authenticate.entity.MovimientoUsuario;
+import es.deusto.sd.authenticate.entity.TipoFichaje;
 import es.deusto.sd.authenticate.entity.TipoMovimientoUsuario;
 import es.deusto.sd.authenticate.entity.Usuario;
 
@@ -197,16 +198,8 @@ public class Storage {
         añadirFichaje("TRA008", "ED03", "PU01", "2026-10-07T08:00");
         añadirFichaje("TRA008", "ED03", "PU01", "2026-10-07T16:00");
 
-        movimientosUsuarios.add(new MovimientoUsuario(
-                "TRA001",
-                TipoMovimientoUsuario.ALTA,
-                LocalDateTime.parse("2026-09-01T09:00")));
-
-        movimientosUsuarios.add(new MovimientoUsuario(
-                "TRA002",
-                TipoMovimientoUsuario.ALTA,
-                LocalDateTime.parse("2026-10-06T09:00")));
-
+        // Movimientos de los usuarios ya dados de baja (los activos
+        // generan su ALTA en añadirUsuario)
         movimientosUsuarios.add(new MovimientoUsuario(
                 "TRA003",
                 TipoMovimientoUsuario.ALTA,
@@ -226,38 +219,30 @@ public class Storage {
                 "TRA004",
                 TipoMovimientoUsuario.BAJA,
                 LocalDateTime.parse("2026-09-15T12:00")));
-
-        movimientosUsuarios.add(new MovimientoUsuario(
-                "TRA005",
-                TipoMovimientoUsuario.ALTA,
-                LocalDateTime.parse("2026-02-01T09:00")));
-
-        movimientosUsuarios.add(new MovimientoUsuario(
-                "TRA006",
-                TipoMovimientoUsuario.ALTA,
-                LocalDateTime.parse("2026-01-10T09:00")));
-
-        movimientosUsuarios.add(new MovimientoUsuario(
-                "TRA007",
-                TipoMovimientoUsuario.ALTA,
-                LocalDateTime.parse("2026-10-09T10:00")));
-
-        movimientosUsuarios.add(new MovimientoUsuario(
-                "TRA008",
-                TipoMovimientoUsuario.ALTA,
-                LocalDateTime.parse("2026-04-01T09:00")));
     }
 
     private void añadirUsuario(String nombre, String apellidos, String dni, String idTrabajador,
             String vectorBiometrico, String fecAlta) {
 
-        Usuario usuario = new Usuario(nombre, apellidos, dni, idTrabajador, vectorBiometrico,
-                LocalDateTime.parse(fecAlta));
+        usuarios.put(idTrabajador,
+                new Usuario(nombre, apellidos, dni, idTrabajador, vectorBiometrico));
 
-        usuarios.put(idTrabajador, usuario);
+        movimientosUsuarios.add(new MovimientoUsuario(
+                idTrabajador,
+                TipoMovimientoUsuario.ALTA,
+                LocalDateTime.parse(fecAlta)));
     }
 
+    // Los fichajes de prueba se añaden en orden cronológico:
+    // el 1.º del día es ENTRADA y el siguiente SALIDA.
     private void añadirFichaje(String idTrabajador, String idEdificio, String idPuerta, String timestamp) {
-        fichajes.add(new Fichaje(idTrabajador, idEdificio, idPuerta, LocalDateTime.parse(timestamp)));
+        LocalDateTime momento = LocalDateTime.parse(timestamp);
+
+        boolean primeroDelDia = fichajes.stream().noneMatch(f ->
+                f.getIdTrabajador().equals(idTrabajador)
+                        && f.getTimestamp().toLocalDate().equals(momento.toLocalDate()));
+
+        fichajes.add(new Fichaje(idTrabajador, idEdificio, idPuerta, momento,
+                primeroDelDia ? TipoFichaje.ENTRADA : TipoFichaje.SALIDA));
     }
 }
