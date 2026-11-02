@@ -75,12 +75,6 @@ public class InformesService {
 
             String idTrabajador = f.getIdTrabajador();
 
-            // Si el trabajador ya está dado de baja,
-            // no se cuenta en fichajes correctos.
-            if (!usuariosMap.containsKey(idTrabajador)) {
-                continue;
-            }
-
             LocalDate dia =
                     f.getTimestamp().toLocalDate();
 

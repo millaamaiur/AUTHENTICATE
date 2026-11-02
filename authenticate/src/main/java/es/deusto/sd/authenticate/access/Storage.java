@@ -176,6 +176,8 @@ public class Storage {
 
         // 05/10 -> 3 fichajes -> NO CORRECTO
         // El requisito dice exactamente 2 eventos
+        // Caso de prueba: 3 eventos el 05/10. FichajesService no admite un tercero,
+        // pero aquí se cargan directamente; el informe solo cuenta días con 2 eventos.
         añadirFichaje("TRA005", "ED02", "PU05", "2026-10-05T07:00");
         añadirFichaje("TRA005", "ED02", "PU05", "2026-10-05T12:00");
         añadirFichaje("TRA005", "ED02", "PU05", "2026-10-05T16:00");

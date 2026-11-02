@@ -81,6 +81,19 @@ public class AccesoDatosCentral {
         return resultado;
     }
 
+    public List<MovimientoUsuario> obtenerMovimientosUsuario(String idTrabajador) {
+
+        List<MovimientoUsuario> resultado = new ArrayList<>();
+
+        for (MovimientoUsuario movimiento : storage.getMovimientosUsuarios()) {
+            if (movimiento.getIdTrabajador().equals(idTrabajador)) {
+                resultado.add(movimiento);
+            }
+        }
+
+        return resultado;
+    }
+
     public void guardarMovimiento(MovimientoUsuario movimiento) {
         storage.getMovimientosUsuarios().add(movimiento);
     }
