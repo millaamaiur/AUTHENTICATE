@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import es.deusto.sd.authenticate.dto.UsuarioDTO;
 import es.deusto.sd.authenticate.service.UsuariosService;
+import io.swagger.v3.oas.annotations.Operation;
 
 @RestController
 @RequestMapping("/usuarios")
@@ -27,6 +28,10 @@ public class UsuariosController {
     }
 
     @PostMapping
+    @Operation(
+        summary = "Dar de alta un usuario",
+        description = "Registra un nuevo usuario con los datos proporcionados.")
+
     public ResponseEntity<Void> altaUsuario(
             @RequestBody UsuarioDTO usuario) {
 
@@ -40,6 +45,9 @@ public class UsuariosController {
     }
 
     @DeleteMapping("/{idTrabajador}")
+    @Operation(
+        summary = "Dar de baja un usuario",
+        description = "Da de baja al usuario identificado por idTrabajador.")
     public ResponseEntity<Void> bajaUsuario(
             @PathVariable String idTrabajador) {
 
@@ -53,6 +61,9 @@ public class UsuariosController {
     }
 
     @PutMapping("/{idTrabajador}")
+    @Operation(
+        summary = "Modificar un usuario",
+        description = "Actualiza los datos del usuario identificado por idTrabajador.")
     public ResponseEntity<Void> modificarUsuario(
             @PathVariable String idTrabajador,
             @RequestBody UsuarioDTO datos) {
@@ -67,6 +78,9 @@ public class UsuariosController {
     }
 
     @GetMapping("/{idTrabajador}")
+    @Operation(
+        summary = "Consultar un usuario",
+        description = "Obtiene los datos del usuario identificado por idTrabajador.")
     public ResponseEntity<UsuarioDTO> consultarUsuario(
             @PathVariable String idTrabajador) {
 
@@ -79,7 +93,10 @@ public class UsuariosController {
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    @GetMapping()
+    @GetMapping
+    @Operation(
+        summary = "Consultar todos los usuarios",
+        description = "Obtiene la lista de usuarios.")
     public ResponseEntity<List<UsuarioDTO>> consultarUsuarios() {
 
         List<UsuarioDTO> usuarios = usuariosService.consultarUsuarios();

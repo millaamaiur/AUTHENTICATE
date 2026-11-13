@@ -2,10 +2,14 @@ package es.deusto.sd.authenticate.facade;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import es.deusto.sd.authenticate.dto.FichajeDTO;
 import es.deusto.sd.authenticate.service.FichajesService;
+import io.swagger.v3.oas.annotations.Operation;
 
 @RestController
 @RequestMapping("/fichajes")
@@ -18,6 +22,10 @@ public class FichajesController {
     }
 
     @PostMapping
+    @Operation(
+        summary = "Registrar un fichaje",
+        description = "Registra el fichaje de un trabajador en una puerta de un edificio, "
+            + "si está activo y la fecha está dentro de su periodo de alta.")
     public ResponseEntity<Void> registrarFichaje(
             @RequestBody FichajeDTO fichaje) {
 

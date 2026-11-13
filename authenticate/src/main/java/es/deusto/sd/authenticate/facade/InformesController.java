@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
 import es.deusto.sd.authenticate.dto.InformeDTO;
 import es.deusto.sd.authenticate.service.InformesService;
 
+import io.swagger.v3.oas.annotations.Operation;
+
 @RestController
 @RequestMapping("/informes")
 public class InformesController {
@@ -23,10 +25,14 @@ public class InformesController {
     }
 
     @GetMapping
+    @Operation(
+        summary = "Obtener un informe",
+        description = "Genera un informe para el periodo indicado mediante los parámetros "
+            + "inicio y fin, con formato de fecha AAAA-MM-DD.")
     public ResponseEntity<InformeDTO> obtenerInforme(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate inicio,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fin) {
-        
+
         InformeDTO informe = informesService.generarInforme(inicio, fin);
         return ResponseEntity.ok(informe);
     }
