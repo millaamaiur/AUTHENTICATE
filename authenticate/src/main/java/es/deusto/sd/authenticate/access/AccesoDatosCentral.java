@@ -9,7 +9,6 @@ import java.util.Optional;
 import org.springframework.stereotype.Repository;
 
 import es.deusto.sd.authenticate.entity.Fichaje;
-import es.deusto.sd.authenticate.entity.MovimientoUsuario;
 import es.deusto.sd.authenticate.entity.Usuario;
 
 @Repository
@@ -75,42 +74,6 @@ public class AccesoDatosCentral {
 
             if (!dia.isBefore(inicio) && !dia.isAfter(fin)) {
                 resultado.add(f);
-            }
-        }
-
-        return resultado;
-    }
-
-    public List<MovimientoUsuario> obtenerMovimientosUsuario(String idTrabajador) {
-
-        List<MovimientoUsuario> resultado = new ArrayList<>();
-
-        for (MovimientoUsuario movimiento : storage.getMovimientosUsuarios()) {
-            if (movimiento.getIdTrabajador().equals(idTrabajador)) {
-                resultado.add(movimiento);
-            }
-        }
-
-        return resultado;
-    }
-
-    public void guardarMovimiento(MovimientoUsuario movimiento) {
-        storage.getMovimientosUsuarios().add(movimiento);
-    }
-
-    public List<MovimientoUsuario> obtenerMovimientosEntre(
-            LocalDate inicio,
-            LocalDate fin) {
-
-        List<MovimientoUsuario> resultado = new ArrayList<>();
-
-        for (MovimientoUsuario movimiento : storage.getMovimientosUsuarios()) {
-
-            LocalDate fecha =
-                    movimiento.getFecha().toLocalDate();
-
-            if (!fecha.isBefore(inicio) && !fecha.isAfter(fin)) {
-                resultado.add(movimiento);
             }
         }
 

@@ -4,6 +4,11 @@ import java.time.LocalDateTime;
 
 public class Fichaje {
 
+    public enum TipoFichaje {
+        ENTRADA,
+        SALIDA
+    }
+
     private String idTrabajador; // TRA 546
     private String idEdificio; // ED 5757
     private String idPuerta; // PU 3491

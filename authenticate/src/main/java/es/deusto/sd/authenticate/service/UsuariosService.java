@@ -10,8 +10,6 @@ import org.springframework.stereotype.Service;
 
 import es.deusto.sd.authenticate.access.AccesoDatosCentral;
 import es.deusto.sd.authenticate.dto.UsuarioDTO;
-import es.deusto.sd.authenticate.entity.MovimientoUsuario;
-import es.deusto.sd.authenticate.entity.TipoMovimientoUsuario;
 import es.deusto.sd.authenticate.entity.Usuario;
 
 @Service
@@ -25,8 +23,7 @@ public class UsuariosService {
 
     public boolean altaUsuario(UsuarioDTO usuario) {
 
-        Optional<Usuario> usuarioExistente =
-                accesoDatos.obtenerUsuario(usuario.getIdTrabajador());
+        Optional<Usuario> usuarioExistente = accesoDatos.obtenerUsuario(usuario.getIdTrabajador());
 
         if (usuarioExistente.isPresent()) {
             return false;
@@ -39,37 +36,28 @@ public class UsuariosService {
                 usuario.getApellidos(),
                 usuario.getDni(),
                 usuario.getIdTrabajador(),
-                usuario.getVectorBiometrico());
+                usuario.getVectorBiometrico(),
+                fechaAlta,
+                null,
+                true);
 
         accesoDatos.guardarUsuario(nuevoUsuario);
-
-        MovimientoUsuario movimiento =
-                new MovimientoUsuario(
-                        usuario.getIdTrabajador(),
-                        TipoMovimientoUsuario.ALTA,
-                        fechaAlta);
-
-        accesoDatos.guardarMovimiento(movimiento);
 
         return true;
     }
 
     public boolean bajaUsuario(String idTrabajador) {
 
-        Optional<Usuario> usuarioExis =
-                accesoDatos.obtenerUsuario(idTrabajador);
+        Optional<Usuario> usuarioExis = accesoDatos.obtenerUsuario(idTrabajador);
 
         if (usuarioExis.isPresent()) {
+            Usuario usuario = usuarioExis.get();
 
-            accesoDatos.eliminarUsuario(idTrabajador);
-
-            MovimientoUsuario movimiento =
-                    new MovimientoUsuario(
-                            idTrabajador,
-                            TipoMovimientoUsuario.BAJA,
-                            LocalDateTime.now());
-
-            accesoDatos.guardarMovimiento(movimiento);
+            if (usuario.isEstado()) {
+                usuario.setEstado(false);
+                usuario.setFecBaja(LocalDateTime.now());
+                accesoDatos.guardarUsuario(usuario);
+            }
 
             return true;
         }
@@ -81,8 +69,7 @@ public class UsuariosService {
             String idTrabajador,
             UsuarioDTO datos) {
 
-        Optional<Usuario> usuarioExis =
-                accesoDatos.obtenerUsuario(idTrabajador);
+        Optional<Usuario> usuarioExis = accesoDatos.obtenerUsuario(idTrabajador);
 
         if (usuarioExis.isPresent()) {
 
@@ -103,8 +90,7 @@ public class UsuariosService {
 
     public UsuarioDTO consultarUsuario(String idTrabajador) {
 
-        Optional<Usuario> usuarioExis =
-                accesoDatos.obtenerUsuario(idTrabajador);
+        Optional<Usuario> usuarioExis = accesoDatos.obtenerUsuario(idTrabajador);
 
         if (usuarioExis.isPresent()) {
 
@@ -125,8 +111,7 @@ public class UsuariosService {
 
     public List<UsuarioDTO> consultarUsuarios() {
 
-        Optional<Map<String, Usuario>> usuarios =
-                accesoDatos.obtenerUsuarios();
+        Optional<Map<String, Usuario>> usuarios = accesoDatos.obtenerUsuarios();
 
         if (usuarios.isPresent()) {
 
