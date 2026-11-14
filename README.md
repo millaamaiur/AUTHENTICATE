@@ -17,19 +17,19 @@ Versiones declaradas en la configuración del proyecto:
 
 ## Ejecución
 
-El proyecto Gradle está dentro de la carpeta `authenticate`.
+El proyecto Gradle está dentro de la carpeta `servicio-central`.
 
 En Windows, desde la raíz del repositorio:
 
 ```powershell
-cd authenticate
+cd servicio-central
 .\gradlew.bat bootRun
 ```
 
 En Linux o macOS:
 
 ```bash
-cd authenticate
+cd servicio-central
 ./gradlew bootRun
 ```
 
@@ -224,7 +224,7 @@ Los datos se cargan directamente en memoria. Por eso incluyen un día con tres f
 
 ## Comprobaciones
 
-Desde la carpeta `authenticate`, en Windows:
+Desde la carpeta `servicio-central`, en Windows:
 
 ```powershell
 .\gradlew.bat build
