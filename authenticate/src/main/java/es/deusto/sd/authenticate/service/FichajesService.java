@@ -3,12 +3,9 @@ package es.deusto.sd.authenticate.service;
 import es.deusto.sd.authenticate.access.AccesoDatosCentral;
 import es.deusto.sd.authenticate.dto.FichajeDTO;
 import es.deusto.sd.authenticate.entity.Fichaje;
-import es.deusto.sd.authenticate.entity.MovimientoUsuario;
-import es.deusto.sd.authenticate.entity.TipoFichaje;
-import es.deusto.sd.authenticate.entity.TipoMovimientoUsuario;
+import es.deusto.sd.authenticate.entity.Fichaje.TipoFichaje;
 import es.deusto.sd.authenticate.entity.Usuario;
 import java.time.LocalDateTime;
-import java.util.Comparator;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -30,13 +27,15 @@ public class FichajesService {
         }
 
         // No puede fichar antes de su última ALTA
-        LocalDateTime ultimaAlta = accesoDatos.obtenerMovimientosUsuario(fichaje.getIdTrabajador()).stream()
-                .filter(m -> m.getTipo() == TipoMovimientoUsuario.ALTA)
-                .map(MovimientoUsuario::getFecha)
-                .max(Comparator.naturalOrder())
-                .orElse(null);
+        Usuario usuario = usuarioOpt.get();
 
-        if (ultimaAlta != null && fichaje.getTimestamp().isBefore(ultimaAlta)) {
+        if (!usuario.isEstado()) {
+            return false;
+        }
+
+        LocalDateTime fechaAlta = usuario.getFecAlta();
+
+        if (fechaAlta != null && fichaje.getTimestamp().isBefore(fechaAlta)) {
             return false;
         }
 
