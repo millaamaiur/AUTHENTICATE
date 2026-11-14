@@ -6,6 +6,26 @@ El servicio central recibe fichajes de las puertas, gestiona los trabajadores y 
 
 Los datos se almacenan en memoria mediante `Storage` y se pierden al reiniciar la aplicación.
 
+## Prototipo 2: servicios
+
+El sistema se compone de cuatro servicios independientes, cada uno en su carpeta y con su propio Gradle Wrapper:
+
+| Carpeta | Puerto | Descripción |
+|---|---|---|
+| `servicio-central/` | 8080 | Spring Boot. API REST de usuarios, fichajes e informes (prototipo 1). |
+| `servicio-almacenamiento/` | 8082 | Spring Boot + JPA + H2. API REST de almacenamiento (esqueleto; consola H2 habilitada). |
+| `servicio-autentificacion/` | 8081 | En desarrollo en su propia rama. |
+| `servicio-verificacion-facial/` | 9090 | Java plano, servidor de sockets TCP (sin Spring). |
+
+Para arrancar cada servicio, desde su carpeta:
+
+```bash
+./gradlew bootRun   # servicio-central y servicio-almacenamiento
+./gradlew run       # servicio-verificacion-facial
+```
+
+En Windows se usa `.\gradlew.bat` en lugar de `./gradlew`.
+
 ## Tecnologías
 
 Versiones declaradas en la configuración del proyecto:
@@ -17,19 +37,19 @@ Versiones declaradas en la configuración del proyecto:
 
 ## Ejecución
 
-El proyecto Gradle está dentro de la carpeta `authenticate`.
+El proyecto Gradle está dentro de la carpeta `servicio-central`.
 
 En Windows, desde la raíz del repositorio:
 
 ```powershell
-cd authenticate
+cd servicio-central
 .\gradlew.bat bootRun
 ```
 
 En Linux o macOS:
 
 ```bash
-cd authenticate
+cd servicio-central
 ./gradlew bootRun
 ```
 
@@ -224,7 +244,7 @@ Los datos se cargan directamente en memoria. Por eso incluyen un día con tres f
 
 ## Comprobaciones
 
-Desde la carpeta `authenticate`, en Windows:
+Desde la carpeta `servicio-central`, en Windows:
 
 ```powershell
 .\gradlew.bat build

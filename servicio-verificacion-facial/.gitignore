@@ -1,0 +1,13 @@
+.gradle
+build/
+bin/
+out/
+!gradle/wrapper/gradle-wrapper.jar
+
+### IDE ###
+.idea
+*.iml
+.classpath
+.project
+.settings
+.vscode/
