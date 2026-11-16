@@ -4,6 +4,8 @@ public class VerificadorBiometrico {
 
     //Diferencia maxima permitida entre los valores
     public static final double TOLERANCIA = 0.02;
+    //Compensar errores de precision de los double
+    public static final double MARGEN_PRECISION = 1e-12;
 
     public boolean verificar(
             double[] vectorReferencia,
@@ -31,7 +33,7 @@ public class VerificadorBiometrico {
             }
 
             //Comprobar si la diferencia supera la tolerancia
-            if (Math.abs(referencia - capturado) > TOLERANCIA) {
+            if (Math.abs(referencia - capturado) > TOLERANCIA + MARGEN_PRECISION) {
                 return false;
             }
         }
