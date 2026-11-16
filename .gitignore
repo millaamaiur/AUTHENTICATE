@@ -1,0 +1,6 @@
+# Configuracion local de VS Code
+/.vscode/
+
+# Archivos generados de la antigua carpeta del servicio central
+/authenticate/.gradle/
+/authenticate/build/
