@@ -15,9 +15,13 @@ import org.springframework.web.bind.annotation.RestController;
 import es.deusto.sd.authenticate.dto.UsuarioDTO;
 import es.deusto.sd.authenticate.service.UsuariosService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/usuarios")
+@Tag(name = "Usuarios", description = "Gestión de usuarios: alta, baja, modificación y consulta")
 public class UsuariosController {
 
     private final UsuariosService usuariosService;
@@ -27,10 +31,10 @@ public class UsuariosController {
     }
 
     @PostMapping
-    @Operation(
-        summary = "Dar de alta un usuario",
-        description = "Registra un nuevo usuario con los datos proporcionados.")
-
+    @Operation(summary = "Dar de alta un usuario", description = "Registra un nuevo usuario con los datos proporcionados.", responses = {
+            @ApiResponse(responseCode = "201", description = "Usuario creado correctamente"),
+            @ApiResponse(responseCode = "409", description = "Ya existe un usuario con ese idTrabajador")
+    })
     public ResponseEntity<Void> altaUsuario(
             @RequestBody UsuarioDTO usuario) {
 
@@ -44,11 +48,12 @@ public class UsuariosController {
     }
 
     @PutMapping("/{idTrabajador}/baja")
-    @Operation(
-        summary = "Dar de baja un usuario",
-        description = "Da de baja al usuario identificado por idTrabajador.")
+    @Operation(summary = "Dar de baja un usuario", description = "Da de baja al usuario identificado por idTrabajador.", responses = {
+            @ApiResponse(responseCode = "204", description = "Usuario dado de baja correctamente"),
+            @ApiResponse(responseCode = "404", description = "No existe ningún usuario con ese idTrabajador")
+    })
     public ResponseEntity<Void> bajaUsuario(
-            @PathVariable String idTrabajador) {
+            @Parameter(description = "Identificador del trabajador", example = "TRA001") @PathVariable String idTrabajador) {
 
         boolean resultado = usuariosService.bajaUsuario(idTrabajador);
 
@@ -60,11 +65,12 @@ public class UsuariosController {
     }
 
     @PutMapping("/{idTrabajador}")
-    @Operation(
-        summary = "Modificar un usuario",
-        description = "Actualiza los datos del usuario identificado por idTrabajador.")
+    @Operation(summary = "Modificar un usuario", description = "Actualiza los datos del usuario identificado por idTrabajador.", responses = {
+            @ApiResponse(responseCode = "204", description = "Usuario modificado correctamente"),
+            @ApiResponse(responseCode = "404", description = "No existe ningún usuario con ese idTrabajador")
+    })
     public ResponseEntity<Void> modificarUsuario(
-            @PathVariable String idTrabajador,
+            @Parameter(description = "Identificador del trabajador", example = "TRA001") @PathVariable String idTrabajador,
             @RequestBody UsuarioDTO datos) {
 
         boolean resultado = usuariosService.modificarUsuario(idTrabajador, datos);
@@ -77,11 +83,12 @@ public class UsuariosController {
     }
 
     @GetMapping("/{idTrabajador}")
-    @Operation(
-        summary = "Consultar un usuario",
-        description = "Obtiene los datos del usuario identificado por idTrabajador.")
+    @Operation(summary = "Consultar un usuario", description = "Obtiene los datos del usuario identificado por idTrabajador.", responses = {
+            @ApiResponse(responseCode = "200", description = "Usuario encontrado, se devuelven sus datos"),
+            @ApiResponse(responseCode = "404", description = "No existe ningún usuario con ese idTrabajador")
+    })
     public ResponseEntity<UsuarioDTO> consultarUsuario(
-            @PathVariable String idTrabajador) {
+            @Parameter(description = "Identificador del trabajador", example = "TRA001") @PathVariable String idTrabajador) {
 
         UsuarioDTO u = usuariosService.consultarUsuario(idTrabajador);
 
@@ -93,9 +100,9 @@ public class UsuariosController {
     }
 
     @GetMapping
-    @Operation(
-        summary = "Consultar todos los usuarios",
-        description = "Obtiene la lista de usuarios.")
+    @Operation(summary = "Consultar todos los usuarios", description = "Obtiene la lista de usuarios.", responses = {
+            @ApiResponse(responseCode = "200", description = "Lista de usuarios (puede estar vacía)")
+    })
     public ResponseEntity<List<UsuarioDTO>> consultarUsuarios() {
 
         List<UsuarioDTO> usuarios = usuariosService.consultarUsuarios();
