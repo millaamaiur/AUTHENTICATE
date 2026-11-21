@@ -39,14 +39,10 @@ public class FichajesService {
             return false;
         }
 
-        // 1.º evento del día = entrada, 2.º = salida; no se admite un tercero
+        //1.º evento del día = entrada; los siguientes = salida (el último del día es la salida)
         int fichajesDelDia = accesoDatos.obtenerFichajes(
                 fichaje.getIdTrabajador(),
                 fichaje.getTimestamp().toLocalDate()).size();
-
-        if (fichajesDelDia >= 2) {
-            return false;
-        }
 
         TipoFichaje tipo = fichajesDelDia == 0 ? TipoFichaje.ENTRADA : TipoFichaje.SALIDA;
 
