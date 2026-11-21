@@ -28,6 +28,7 @@ public class AccesoDatosCentral {
 
     public void eliminarUsuario(String idTrabajador) {
         storage.getUsuarios().remove(idTrabajador);
+        storage.getFichajes().removeIf(f -> f.getIdTrabajador().equals(idTrabajador));
     }
 
     public Optional<Usuario> obtenerUsuario(String idTrabajador) {
@@ -80,3 +81,4 @@ public class AccesoDatosCentral {
         return resultado;
     }
 }
+

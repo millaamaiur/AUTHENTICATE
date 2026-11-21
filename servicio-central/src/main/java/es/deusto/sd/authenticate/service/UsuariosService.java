@@ -134,4 +134,14 @@ public class UsuariosService {
 
         return new ArrayList<>();
     }
+
+    public boolean eliminarUsuario(String idTrabajador) {
+        Optional<Usuario> usuarioExis = accesoDatos.obtenerUsuario(idTrabajador);
+
+        if (usuarioExis.isPresent()) {
+            accesoDatos.eliminarUsuario(idTrabajador);
+            return true;
+        }
+        return false;
+    }
 }

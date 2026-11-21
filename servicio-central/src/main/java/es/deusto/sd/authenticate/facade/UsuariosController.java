@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -108,5 +109,23 @@ public class UsuariosController {
         List<UsuarioDTO> usuarios = usuariosService.consultarUsuarios();
 
         return new ResponseEntity<>(usuarios, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{idTrabajador}")
+    @Operation(summary = "Eliminar un usuario", description = "Elimina todos los datos del usuario identificado por idTrabajador: "
+            + "sus datos personales y todos sus fichajes.", responses = {
+                    @ApiResponse(responseCode = "204", description = "Usuario y todos sus datos eliminados correctamente"),
+                    @ApiResponse(responseCode = "404", description = "No existe ningún usuario con ese idTrabajador")
+            })
+    public ResponseEntity<Void> eliminarUsuario(
+            @Parameter(description = "Identificador del trabajador", example = "TRA001") @PathVariable String idTrabajador) {
+
+        boolean resultado = usuariosService.eliminarUsuario(idTrabajador);
+
+        if (resultado) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 }
