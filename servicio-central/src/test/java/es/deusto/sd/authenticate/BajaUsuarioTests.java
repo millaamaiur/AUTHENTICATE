@@ -9,8 +9,6 @@ import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
-import es.deusto.sd.authenticate.access.AccesoDatosCentral;
-import es.deusto.sd.authenticate.access.Storage;
 import es.deusto.sd.authenticate.dto.FichajeDTO;
 import es.deusto.sd.authenticate.entity.Usuario;
 import es.deusto.sd.authenticate.service.FichajesService;
@@ -21,19 +19,18 @@ class BajaUsuarioTests {
 
     @Test
     void bajaConservaUsuarioFichajesYFechaOriginal() {
-        Storage storage = new Storage();
-        AccesoDatosCentral acceso = new AccesoDatosCentral(storage);
+        AccesoDatosEnMemoria acceso = new AccesoDatosEnMemoria();
         UsuariosService usuarios = new UsuariosService(acceso);
         FichajesService fichajes = new FichajesService(acceso);
         Usuario usuario = acceso.obtenerUsuario("TRA001").orElseThrow();
-        var fichajesAnteriores = storage.getFichajes().stream()
+        var fichajesAnteriores = acceso.getFichajes().stream()
                 .filter(f -> f.getIdTrabajador().equals("TRA001")).toList();
 
         assertTrue(usuarios.bajaUsuario("TRA001"));
         assertSame(usuario, acceso.obtenerUsuario("TRA001").orElseThrow());
         assertFalse(usuario.isEstado());
         assertNotNull(usuario.getFecBaja());
-        assertEquals(fichajesAnteriores, storage.getFichajes().stream()
+        assertEquals(fichajesAnteriores, acceso.getFichajes().stream()
                 .filter(f -> f.getIdTrabajador().equals("TRA001")).toList());
 
         // Una fecha fija permite detectar si repetir la baja la sobrescribe.
@@ -48,7 +45,7 @@ class BajaUsuarioTests {
 
     @Test
     void informeIncluyeBajasPeroSoloCuentaFichajesDeActivos() {
-        InformesService informes = new InformesService(new AccesoDatosCentral(new Storage()));
+        InformesService informes = new InformesService(new AccesoDatosEnMemoria());
         var informe = informes.generarInforme(
                 LocalDate.of(2026, 10, 5), LocalDate.of(2026, 10, 9));
 
