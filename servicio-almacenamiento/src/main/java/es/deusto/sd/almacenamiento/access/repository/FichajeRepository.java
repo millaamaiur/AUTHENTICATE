@@ -10,4 +10,6 @@ import es.deusto.sd.almacenamiento.entity.Fichaje;
 public interface FichajeRepository extends JpaRepository<Fichaje, Long> {
     List<Fichaje> findByIdTrabajador(String idTrabajador);
     List<Fichaje> findByTimestampBetween(LocalDateTime inicio, LocalDateTime fin);
+    List<Fichaje> findByIdTrabajadorAndTimestampBetween(String idTrabajador, LocalDateTime inicio, LocalDateTime fin);
+    void deleteByIdTrabajador(String idTrabajador);
 }
