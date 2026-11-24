@@ -1,148 +1,107 @@
-# AUTHENTICATE — Servicio Central
+# AUTHENTICATE — Prototipo 2 (AUTHENTICUS 2)
 
-Prototipo **AUTHENTICUS 1** del proyecto AUTHENTICATE, de la asignatura Diseño de Software de la Universidad de Deusto.
+Solución de fichaje laboral del Ayuntamiento de Donostia/San Sebastián, desarrollada para la asignatura **Diseño de Software** (Universidad de Deusto).
 
-El servicio central recibe fichajes de las puertas, gestiona los trabajadores y genera informes de asistencia. La API puede utilizarse desde Swagger UI o Postman.
+Un trabajador pasa su tarjeta por una puerta. El servicio de autentificación comprueba su cara con el servicio de verificación facial y, si es correcta, registra el fichaje en el servicio central. El servicio central valida al usuario, guarda los datos en el servicio de almacenamiento y genera los informes.
 
-Los datos se almacenan en memoria mediante `Storage` y se pierden al reiniciar la aplicación.
+## Servicios
 
-## Prototipo 2: servicios
+El sistema son cuatro servicios independientes, cada uno en su carpeta y con su propio Gradle Wrapper:
 
-El sistema se compone de cuatro servicios independientes, cada uno en su carpeta y con su propio Gradle Wrapper:
+| Carpeta | Puerto | Tecnología | Función |
+|---|---|---|---|
+| `servicio-central/` | 8080 | Spring Boot | API REST de usuarios, fichajes e informes. Habla con el almacenamiento por REST. |
+| `servicio-almacenamiento/` | 8082 | Spring Boot + JPA + H2 | Persistencia de usuarios y fichajes. |
+| `servicio-autentificacion/` | 8081 | Spring Boot | Dispositivo de la puerta: recibe la tarjeta y registra el fichaje en el central. |
+| `servicio-verificacion-facial/` | 9090 | Java plano (sockets TCP) | Compara dos vectores biométricos y devuelve si coinciden. |
 
-| Carpeta | Puerto | Descripción |
-|---|---|---|
-| `servicio-central/` | 8080 | Spring Boot. API REST de usuarios, fichajes e informes (prototipo 1). |
-| `servicio-almacenamiento/` | 8082 | Spring Boot + JPA + H2. API REST de almacenamiento (esqueleto; consola H2 habilitada). |
-| `servicio-autentificacion/` | 8081 | En desarrollo en su propia rama. |
-| `servicio-verificacion-facial/` | 9090 | Java plano, servidor de sockets TCP (sin Spring). |
-
-Para arrancar cada servicio, desde su carpeta:
-
-```bash
-./gradlew bootRun   # servicio-central y servicio-almacenamiento
-./gradlew run       # servicio-verificacion-facial
+```text
+Puerta (Postman) → servicio-autentificacion (8081) ──REST──→ servicio-central (8080) ──REST──→ servicio-almacenamiento (8082) → H2
+                          │
+                          └──sockets TCP──→ servicio-verificacion-facial (9090)
 ```
 
-En Windows se usa `.\gradlew.bat` en lugar de `./gradlew`.
+Cada servicio tiene su propio README con más detalle (autentificación y verificación facial).
 
-## Tecnologías
+## Requisitos
 
-Versiones declaradas en la configuración del proyecto:
+- Java 21
+- No hace falta instalar Gradle: cada carpeta incluye su Gradle Wrapper.
 
-- Java 21.
-- Spring Boot 4.1.2.
-- Gradle Wrapper 9.8.2.
-- springdoc-openapi 2.3.0.
+## Cómo arrancarlo
 
-## Ejecución
+El **orden importa**: el central necesita el almacenamiento en marcha, y la autentificación necesita el central y la verificación facial.
 
-El proyecto Gradle está dentro de la carpeta `servicio-central`.
-
-En Windows, desde la raíz del repositorio:
+Abre una terminal por servicio. En Windows se usa `.\gradlew.bat`; en Linux o macOS, `./gradlew`.
 
 ```powershell
+# 1. Almacenamiento (puerto 8082)
+cd servicio-almacenamiento
+.\gradlew.bat bootRun
+
+# 2. Central (puerto 8080)
 cd servicio-central
+.\gradlew.bat bootRun
+
+# 3. Verificación facial (puerto 9090), solo si se prueba la autentificación
+cd servicio-verificacion-facial
+.\gradlew.bat run
+
+# 4. Autentificación (puerto 8081), solo si se prueba la puerta
+cd servicio-autentificacion
 .\gradlew.bat bootRun
 ```
 
-En Linux o macOS:
+Para probar el servicio central (usuarios, fichajes e informes) bastan los pasos 1 y 2.
 
-```bash
-cd servicio-central
-./gradlew bootRun
-```
+Cada servicio con API REST tiene Swagger UI:
 
-Con la configuración actual, el servidor utiliza el puerto 8080:
+- Central: http://localhost:8080/swagger-ui/index.html
+- Almacenamiento: http://localhost:8082/swagger-ui/index.html
+- Autentificación: http://localhost:8081/swagger-ui/index.html
 
-- Aplicación: http://localhost:8080
-- Swagger UI: http://localhost:8080/swagger-ui/index.html
-- Especificación OpenAPI: http://localhost:8080/v3/api-docs
+### Datos de prueba y base de datos
 
-## Arquitectura
+El almacenamiento guarda los datos en un fichero H2 (`./data/almacenamiento_db`), por lo que **se conservan al reiniciar**. La primera vez que arranca, con la base de datos vacía, carga 8 usuarios y sus fichajes (`config/DatosPrueba`).
 
-Las peticiones siguen este recorrido:
+Para volver a los datos iniciales, detén el almacenamiento y borra la carpeta `data/`. Esa carpeta se crea en el directorio desde el que se arranca el servicio y está excluida de git.
+
+La consola H2 está habilitada en http://localhost:8082/h2-console (JDBC URL: `jdbc:h2:file:./data/almacenamiento_db`, usuario `sa`, sin contraseña).
+
+## Servicio central
+
+### Arquitectura
 
 ```text
-Controlador → Servicio → AccesoDatosCentral → Storage
+Controlador (facade) → Servicio (service) → AccesoDatosCentral (access) → REST → servicio-almacenamiento
 ```
 
 | Capa | Paquete | Responsabilidad |
 |---|---|---|
-| Controladores | `facade` | Recibir peticiones HTTP, llamar a los servicios y devolver respuestas. |
-| Servicios | `service` | Aplicar las reglas de negocio y generar informes. |
-| Acceso a datos | `access` | Centralizar las consultas y modificaciones de los datos. |
-| Entidades | `entity` | Representar los usuarios y sus fichajes. |
-| DTO | `dto` | Representar los datos intercambiados mediante la API. |
+| Controladores | `facade` | Recibir peticiones HTTP, llamar a los servicios y devolver el código de respuesta. |
+| Servicios | `service` | Reglas de negocio e informes. |
+| Acceso a datos | `access` | Llamar al servicio de almacenamiento por REST (`RestClient`). |
+| Entidades | `entity` | `Usuario` y `Fichaje` (con el enum `TipoFichaje` dentro). |
+| DTO | `dto` | Datos intercambiados con los clientes, documentados con `@Schema`. |
 
-### Instancia única de AccesoDatosCentral
+`AccesoDatosCentral` es un único `@Repository`, inyectado por constructor en los tres servicios. La dirección del almacenamiento se configura en `servicio-central/src/main/resources/application.properties`:
 
-`AccesoDatosCentral` se declara como un bean de Spring mediante `@Repository`.
-
-Su alcance es singleton por defecto: dentro del mismo contexto de aplicación, los tres servicios reciben la misma instancia mediante inyección por constructor.
-
-No se crean instancias manualmente con `new AccesoDatosCentral(...)`.
-
-## Modelo de datos
-
-### Usuario
-
-Cada usuario contiene:
-
-- `nombre`
-- `apellidos`
-- `dni`
-- `idTrabajador`
-- `vectorBiometrico`
-- `fecAlta`
-- `fecBaja`
-- `estado`
-
-El estado se representa mediante un booleano:
-
-- `true`: usuario de alta y activo.
-- `false`: usuario de baja e inactivo.
-
-La fecha de alta se asigna en el servidor al crear el usuario. Inicialmente, la fecha de baja es `null`.
-
-Dar de baja a un usuario cambia su estado y registra la fecha de baja. No elimina al usuario ni sus fichajes. Si ya estaba de baja, se conserva la fecha original.
-
-No se mantiene un histórico separado de movimientos de alta y baja. Las entidades `MovimientoUsuario` y `TipoMovimientoUsuario` se han retirado.
-
-Este prototipo no implementa una operación de eliminación definitiva ni de reactivación. El alta rechaza un identificador que ya exista, aunque el usuario esté de baja.
-
-### Fichaje
-
-Cada fichaje contiene:
-
-- `idTrabajador`
-- `idEdificio`
-- `idPuerta`
-- `timestamp`
-- `tipo`
-
-`TipoFichaje` es un enum definido dentro de `Fichaje`, con los valores:
-
-```java
-ENTRADA
-SALIDA
+```properties
+almacenamiento.url=http://localhost:8082
 ```
-
-El servidor asigna el tipo; el cliente no lo envía.
-
-## API
 
 ### Usuarios
 
 | Método | Ruta | Operación | Respuestas |
 |---|---|---|---|
-| `POST` | `/usuarios` | Crear un usuario activo. | `201` creado; `409` si el identificador ya existe. |
-| `PUT` | `/usuarios/{idTrabajador}/baja` | Dar de baja sin borrar sus datos ni fichajes. | `204` si existe, incluso si ya estaba de baja; `404` si no existe. |
-| `PUT` | `/usuarios/{idTrabajador}` | Modificar los datos personales y biométricos. | `204` modificado; `404` si no existe. |
-| `GET` | `/usuarios/{idTrabajador}` | Consultar un usuario. | `200` encontrado; `404` si no existe. |
-| `GET` | `/usuarios` | Consultar todos los usuarios, incluidos los de baja. | `200`. |
+| `POST` | `/usuarios` | Alta de un usuario. | `201`; `409` si el identificador ya existe |
+| `PUT` | `/usuarios/{idTrabajador}/baja` | Baja: cambia el estado y registra la fecha de baja, conserva sus datos y fichajes. | `204`; `404` |
+| `PUT` | `/usuarios/{idTrabajador}` | Modificación de los datos personales. | `204`; `404` |
+| `GET` | `/usuarios/{idTrabajador}` | Consulta de un usuario. | `200`; `404` |
+| `GET` | `/usuarios` | Consulta de todos los usuarios, también los de baja. | `200` |
+| `DELETE` | `/usuarios/{idTrabajador}` | Eliminado: borra el usuario **y todos sus fichajes**. | `204`; `404` |
 
-Ejemplo de alta:
+Ejemplo de alta (la fecha de alta y el estado los asigna el servidor):
 
 ```json
 {
@@ -154,17 +113,13 @@ Ejemplo de alta:
 }
 ```
 
-El mismo formato se utiliza para modificar los datos de un usuario. La modificación conserva el identificador indicado en la ruta, las fechas y el estado.
-
-Las fechas y el estado se gestionan internamente en `Usuario`; no forman parte del `UsuarioDTO` actual.
+Diferencia entre **baja** y **eliminado**: la baja deja al usuario en el sistema con estado `false` y conserva sus fichajes; el eliminado borra sus datos y todos sus fichajes.
 
 ### Fichajes
 
 | Método | Ruta | Operación | Respuestas |
 |---|---|---|---|
-| `POST` | `/fichajes` | Registrar un evento de puerta. | `201` registrado; `409` rechazado. |
-
-Ejemplo:
+| `POST` | `/fichajes` | Registrar un evento de puerta. | `201`; `409` si se rechaza |
 
 ```json
 {
@@ -175,15 +130,11 @@ Ejemplo:
 }
 ```
 
-La fecha y hora se envían en formato ISO 8601, sin zona horaria.
+El tipo lo asigna el servidor; el cliente no lo envía. Reglas:
 
-Reglas de registro:
-
-- El usuario debe existir y estar activo.
-- El fichaje no puede ser anterior a su fecha de alta.
-- El primer evento registrado para un trabajador en un día se marca como `ENTRADA`.
-- El segundo se marca como `SALIDA`.
-- Un tercer evento para ese trabajador en el mismo día se rechaza.
+- El usuario debe existir y estar de alta.
+- El fichaje no puede ser anterior a la fecha de alta del usuario.
+- El primer evento del día de un trabajador es `ENTRADA`; el segundo y los siguientes son `SALIDA`. Si hay más de dos eventos en un día, el último cuenta como salida.
 
 ### Informes
 
@@ -191,81 +142,75 @@ Reglas de registro:
 GET /informes?inicio=2026-10-05&fin=2026-10-09
 ```
 
-Los parámetros `inicio` y `fin` son obligatorios y utilizan el formato `AAAA-MM-DD`.
+Las fechas, en formato `AAAA-MM-DD`, son obligatorias e incluyen ambos extremos. Un único informe devuelve:
 
-El informe incluye ambos extremos del intervalo y devuelve:
+- `altas`: trabajadores dados de alta en el periodo.
+- `bajas`: trabajadores dados de baja en el periodo (los eliminados no aparecen).
+- `fichajesCorrectosPorTrabajador`: días correctos de cada trabajador activo. Un día es **correcto** si tiene exactamente dos fichajes y entre ambos pasan al menos ocho horas.
 
-- `altas`: identificadores cuya fecha de alta está en el periodo.
-- `bajas`: identificadores cuya fecha de baja está en el periodo.
-- `fichajesCorrectosPorTrabajador`: número de días correctos de cada usuario actualmente activo.
+Respuestas: `200`; `400` si alguna fecha tiene un formato incorrecto.
 
-Un usuario puede aparecer tanto en altas como en bajas si ambas fechas están dentro del periodo.
+## Servicio de almacenamiento
 
-Un día es correcto cuando contiene exactamente dos fichajes y entre ambos transcurren al menos ocho horas.
+Base de datos del sistema. Solo lo usa el servicio central. Todas las rutas empiezan por `/almacenamiento`.
 
-Los usuarios activos sin días correctos aparecen con valor `0`. Los usuarios actualmente de baja quedan fuera de este recuento, aunque se conservan sus fichajes históricos.
+| Método | Ruta | Operación | Respuestas |
+|---|---|---|---|
+| `POST` | `/almacenamiento/usuarios` | Guarda un usuario (lo crea o actualiza). | `201` |
+| `GET` | `/almacenamiento/usuarios` | Todos los usuarios. | `200` |
+| `GET` | `/almacenamiento/usuarios/{idTrabajador}` | Un usuario. | `200`; `404` |
+| `DELETE` | `/almacenamiento/usuarios/{idTrabajador}` | Borra el usuario y sus fichajes (en una transacción). | `204`; `404` |
+| `POST` | `/almacenamiento/fichajes` | Guarda un fichaje. | `201` |
+| `GET` | `/almacenamiento/fichajes/{idTrabajador}?dia=AAAA-MM-DD` | Fichajes de un trabajador; `dia` es opcional. | `200` |
+| `GET` | `/almacenamiento/fichajes?inicio=AAAA-MM-DD&fin=AAAA-MM-DD` | Fichajes de todos entre dos fechas. | `200` |
 
-La respuesta correcta utiliza el código `200`.
-
-## Documentación OpenAPI
-
-Los siete endpoints tienen `@Operation` con un resumen y una descripción.
-
-Los DTO `UsuarioDTO`, `FichajeDTO` e `InformeDTO` utilizan `@Schema` para documentar las clases y sus campos, con ejemplos.
-
-En esta versión no se utilizan `@ApiResponse` ni `@ApiResponses`. Los códigos de respuesta se describen en este README.
+Los datos viajan como DTOs (`UsuarioDTO`, `FichajeDTO`), no como entidades JPA.
 
 ## Datos de prueba
 
-`Storage` carga ocho usuarios: seis activos y dos de baja.
+Se cargan 8 usuarios: seis de alta y dos de baja. Sirven para probar el informe del **05/10/2026 al 09/10/2026**.
 
-Las fechas y los fichajes permiten probar el informe del **05/10/2026 al 09/10/2026**.
-
-| Usuario | Situación | Días correctos esperados |
+| Usuario | Situación | Días correctos |
 |---|---|---|
-| TRA001 — Ane | Activa desde antes del periodo. | 2 |
-| TRA002 — Jon | Alta el 06/10/2026. | 2 |
-| TRA003 — Miren | Baja el 08/10/2026. | No aparece en el recuento; aparece en bajas. |
-| TRA004 — Iker | Baja el 15/09/2026. | No aparece en el recuento ni en las bajas del periodo. |
-| TRA005 — Leire | Activa; tiene un día con tres eventos. | 1 |
-| TRA006 — Maialen | Activa sin fichajes. | 0 |
-| TRA007 — Unai | Alta el 09/10/2026, sin fichajes. | 0 |
-| TRA008 — Nerea | Activa; tiene un día de exactamente ocho horas. | 1 |
+| TRA001 — Ane | Activa desde antes del periodo | 2 |
+| TRA002 — Jon | Alta el 06/10 | 2 |
+| TRA003 — Miren | Baja el 08/10 | no cuenta; aparece en bajas |
+| TRA004 — Iker | Baja el 15/09 | no aparece |
+| TRA005 — Leire | Un día con tres fichajes | 1 |
+| TRA006 — Maialen | Sin fichajes | 0 |
+| TRA007 — Unai | Alta el 09/10, sin fichajes | 0 |
+| TRA008 — Nerea | Un día de exactamente ocho horas | 1 |
 
-Para ese intervalo:
+Para ese intervalo, el informe debe dar: altas `TRA002` y `TRA007`; bajas `TRA003`; y `TRA001: 2`, `TRA002: 2`, `TRA005: 1`, `TRA006: 0`, `TRA007: 0`, `TRA008: 1`.
 
-- Altas: `TRA002` y `TRA007`.
-- Bajas: `TRA003`.
-- Recuento: `TRA001: 2`, `TRA002: 2`, `TRA005: 1`, `TRA006: 0`, `TRA007: 0` y `TRA008: 1`.
+## Pruebas
 
-El orden de los resultados no está garantizado.
-
-Los datos se cargan directamente en memoria. Por eso incluyen un día con tres fichajes para comprobar que el informe lo descarta, aunque el servicio rechaza un tercer evento recibido por la API.
-
-## Comprobaciones
-
-Desde la carpeta `servicio-central`, en Windows:
+Tests del servicio central, que usan una versión en memoria de `AccesoDatosCentral` y no necesitan el almacenamiento:
 
 ```powershell
-.\gradlew.bat build
+cd servicio-central
+.\gradlew.bat test
 ```
 
-En Linux o macOS:
+Prueba manual recomendada, con almacenamiento y central arrancados:
 
-```bash
-./gradlew build
-```
+1. Generar el informe del 05/10 al 09/10 y comparar con la tabla anterior.
+2. Dar de alta un usuario, fichar con él y consultarlo.
+3. Darlo de baja y comprobar que sigue en `GET /usuarios` y que ya no puede fichar.
+4. Eliminarlo (`DELETE`) y comprobar que `GET /usuarios/{id}` da `404` y que sus fichajes han desaparecido.
+5. Registrar tres fichajes de un trabajador el mismo día: los tres dan `201` y ese día no cuenta como correcto en el informe.
 
-Además de compilar y ejecutar las pruebas disponibles, la comprobación funcional debe incluir:
+## Tecnologías
 
-1. Abrir Swagger UI y revisar operaciones, parámetros y esquemas.
-2. Consultar los usuarios de prueba.
-3. Generar el informe del 05/10/2026 al 09/10/2026 y contrastar sus resultados.
-4. Crear un usuario y comprobar que puede fichar.
-5. Darlo de baja y comprobar que sigue siendo consultable.
-6. Comprobar que sus fichajes se conservan y que se rechazan nuevos fichajes.
-7. Repetir la baja y verificar que mantiene su fecha original.
+Java 21 · Spring Boot 4.1.2 · Gradle Wrapper · springdoc-openapi 2.3.0 · H2.
 
 ## Equipo
 
 Equipo 10 — Diseño de Software, Universidad de Deusto, campus de Donostia.
+
+| Servicio | Responsable |
+|---|---|
+| Servicio central | Amaiur Milla |
+| Servicio de almacenamiento | Paul (rehecho por Amaiur Milla en el prototipo 2) |
+| Servicio de autentificación | Julen |
+| Servicio de verificación facial | Airam |
