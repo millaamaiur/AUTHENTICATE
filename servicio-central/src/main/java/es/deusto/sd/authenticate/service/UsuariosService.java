@@ -101,7 +101,10 @@ public class UsuariosService {
                     usuario.getApellidos(),
                     usuario.getDni(),
                     usuario.getIdTrabajador(),
-                    usuario.getVectorBiometrico());
+                    usuario.getVectorBiometrico(),
+                    usuario.isEstado(),
+                    usuario.getFecAlta(),
+                    usuario.getFecBaja());
 
             return result;
         }
@@ -124,7 +127,10 @@ public class UsuariosService {
                         usuario.getApellidos(),
                         usuario.getDni(),
                         usuario.getIdTrabajador(),
-                        usuario.getVectorBiometrico());
+                        usuario.getVectorBiometrico(),
+                        usuario.isEstado(),
+                        usuario.getFecAlta(),
+                        usuario.getFecBaja());
 
                 resultado.add(dto);
             }
