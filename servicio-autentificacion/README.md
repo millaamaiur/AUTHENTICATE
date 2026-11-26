@@ -53,7 +53,7 @@ array JSON de numeros.
 | `server.port` | Puerto del servicio (8081). |
 | `edge.edificio.id` | Identificador del edificio de esta puerta. |
 | `edge.puerta.id` | Identificador de la puerta. |
-| `edge.rostro.path` | Archivo JSON con el vector biometrico capturado. |
+| `edge.rostro.path` | Archivo JSON con el vector biometrico capturado. Si la ruta relativa no existe desde el directorio de trabajo, tambien se busca dentro de `servicio-autentificacion/`, asi que el servicio puede lanzarse desde la raiz del repo o desde su carpeta. |
 | `verificacion.host` | Host del servicio de verificacion facial. |
 | `verificacion.port` | Puerto del servicio de verificacion facial (9090). |
 | `central.url` | URL base del servicio central. |

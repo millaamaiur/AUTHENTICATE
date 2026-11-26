@@ -24,7 +24,7 @@ public class AccesoCapturaCara {
 
     public double[] capturarVectorRostro() throws IOException {
 
-        String contenido = Files.readString(Path.of(rutaArchivo), StandardCharsets.UTF_8);
+        String contenido = Files.readString(resolverRuta(), StandardCharsets.UTF_8);
         JsonObject objeto = JsonParser.parseString(contenido).getAsJsonObject();
         JsonArray array = objeto.getAsJsonArray("vector");
 
@@ -40,5 +40,22 @@ public class AccesoCapturaCara {
         }
 
         return vector;
+    }
+
+    /**
+     * Resuelve la ruta del archivo de captura. Si la ruta relativa no existe desde
+     * el directorio de trabajo (por ejemplo, al lanzar el servicio desde la raiz del
+     * repositorio en lugar de desde servicio-autentificacion), se prueba tambien
+     * dentro de la carpeta del servicio.
+     */
+    private Path resolverRuta() {
+        Path ruta = Path.of(rutaArchivo);
+
+        if (Files.exists(ruta) || ruta.isAbsolute()) {
+            return ruta;
+        }
+
+        Path dentroDelServicio = Path.of("servicio-autentificacion").resolve(ruta);
+        return Files.exists(dentroDelServicio) ? dentroDelServicio : ruta;
     }
 }

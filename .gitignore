@@ -4,3 +4,6 @@
 # Archivos generados de la antigua carpeta del servicio central
 /authenticate/.gradle/
 /authenticate/build/
+
+# Base de datos H2 local del servicio de almacenamiento
+/data/
