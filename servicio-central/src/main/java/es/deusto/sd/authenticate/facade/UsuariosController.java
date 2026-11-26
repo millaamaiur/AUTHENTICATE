@@ -54,7 +54,7 @@ public class UsuariosController {
             @ApiResponse(responseCode = "404", description = "No existe ningún usuario con ese idTrabajador")
     })
     public ResponseEntity<Void> bajaUsuario(
-            @Parameter(description = "Identificador del trabajador", example = "TRA001") @PathVariable String idTrabajador) {
+            @Parameter(description = "Identificador del trabajador", example = "TRA001") @PathVariable("idTrabajador") String idTrabajador) {
 
         boolean resultado = usuariosService.bajaUsuario(idTrabajador);
 
@@ -71,7 +71,7 @@ public class UsuariosController {
             @ApiResponse(responseCode = "404", description = "No existe ningún usuario con ese idTrabajador")
     })
     public ResponseEntity<Void> modificarUsuario(
-            @Parameter(description = "Identificador del trabajador", example = "TRA001") @PathVariable String idTrabajador,
+            @Parameter(description = "Identificador del trabajador", example = "TRA001") @PathVariable("idTrabajador") String idTrabajador,
             @RequestBody UsuarioDTO datos) {
 
         boolean resultado = usuariosService.modificarUsuario(idTrabajador, datos);
@@ -89,7 +89,7 @@ public class UsuariosController {
             @ApiResponse(responseCode = "404", description = "No existe ningún usuario con ese idTrabajador")
     })
     public ResponseEntity<UsuarioDTO> consultarUsuario(
-            @Parameter(description = "Identificador del trabajador", example = "TRA001") @PathVariable String idTrabajador) {
+            @Parameter(description = "Identificador del trabajador", example = "TRA001") @PathVariable("idTrabajador") String idTrabajador) {
 
         UsuarioDTO u = usuariosService.consultarUsuario(idTrabajador);
 
@@ -118,7 +118,7 @@ public class UsuariosController {
                     @ApiResponse(responseCode = "404", description = "No existe ningún usuario con ese idTrabajador")
             })
     public ResponseEntity<Void> eliminarUsuario(
-            @Parameter(description = "Identificador del trabajador", example = "TRA001") @PathVariable String idTrabajador) {
+            @Parameter(description = "Identificador del trabajador", example = "TRA001") @PathVariable("idTrabajador") String idTrabajador) {
 
         boolean resultado = usuariosService.eliminarUsuario(idTrabajador);
 

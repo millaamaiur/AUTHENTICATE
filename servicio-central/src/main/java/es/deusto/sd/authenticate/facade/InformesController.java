@@ -35,8 +35,8 @@ public class InformesController {
                     @ApiResponse(responseCode = "400", description = "Alguna de las fechas no tiene el formato AAAA-MM-DD")
             })
     public ResponseEntity<InformeDTO> obtenerInforme(
-            @Parameter(description = "Fecha de inicio del periodo del informe (AAAA-MM-DD)", example = "2026-10-05") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate inicio,
-            @Parameter(description = "Fecha de fin del periodo del informe (AAAA-MM-DD)", example = "2026-10-09") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fin) {
+            @Parameter(description = "Fecha de inicio del periodo del informe (AAAA-MM-DD)", example = "2026-10-05") @RequestParam("inicio") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate inicio,
+            @Parameter(description = "Fecha de fin del periodo del informe (AAAA-MM-DD)", example = "2026-10-09") @RequestParam("fin") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fin) {
 
         InformeDTO informe = informesService.generarInforme(inicio, fin);
         return ResponseEntity.ok(informe);
