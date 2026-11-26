@@ -30,6 +30,9 @@ trabajador y el vector biometrico de referencia de la tarjeta.
 Respuesta: `true` si la verificacion facial y el registro del fichaje son correctos;
 `false` en caso contrario.
 
+En Java los dos vectores se representan como `double[]`. El DTO los recibe como un
+array JSON de numeros.
+
 ## Flujo
 
 1. `ControladorTarjetaUsuario` recibe los datos de la tarjeta.
@@ -66,3 +69,16 @@ vectorComprobacion (valores separados por comas)
 ```
 
 El servidor responde una linea con `true` o `false`.
+
+## Pruebas
+
+Desde esta carpeta, en Windows:
+
+```powershell
+.\gradlew.bat test
+```
+
+Las pruebas comprueban la lectura del JSON, el orden y el formato de los dos
+vectores enviados por socket, y que un resultado facial `false` no llama al
+Servicio Central. Tambien se comprueba que el fichaje se construye con
+`idTrabajador`, `idEdificio`, `idPuerta` y `timestamp`.

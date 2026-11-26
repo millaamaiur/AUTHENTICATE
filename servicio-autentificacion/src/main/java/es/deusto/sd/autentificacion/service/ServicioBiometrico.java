@@ -1,7 +1,6 @@
 package es.deusto.sd.autentificacion.service;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.springframework.stereotype.Service;
 
@@ -16,7 +15,7 @@ public class ServicioBiometrico {
         this.accesoCapturaCara = accesoCapturaCara;
     }
 
-    public List<Double> generarVectorComprobacion() throws IOException {
+    public double[] generarVectorComprobacion() throws IOException {
         return accesoCapturaCara.capturarVectorRostro();
     }
 }

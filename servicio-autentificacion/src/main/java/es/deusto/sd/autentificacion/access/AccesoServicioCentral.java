@@ -11,10 +11,12 @@ import es.deusto.sd.autentificacion.dto.FichajeCentralDTO;
 @Repository
 public class AccesoServicioCentral {
 
-    @Value("${central.url}")
-    private String centralUrl;
-
+    private final String centralUrl;
     private final RestTemplate restTemplate = new RestTemplate();
+
+    public AccesoServicioCentral(@Value("${central.url}") String centralUrl) {
+        this.centralUrl = centralUrl;
+    }
 
     public boolean registrarFichaje(FichajeCentralDTO fichaje) {
 

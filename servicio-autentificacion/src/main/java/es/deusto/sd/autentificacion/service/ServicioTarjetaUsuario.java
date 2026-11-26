@@ -2,7 +2,6 @@ package es.deusto.sd.autentificacion.service;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -18,21 +17,21 @@ public class ServicioTarjetaUsuario {
     private final ServicioBiometrico servicioBiometrico;
     private final AccesoVerificacionFacial accesoVerificacionFacial;
     private final AccesoServicioCentral accesoServicioCentral;
-
-    @Value("${edge.edificio.id}")
-    private String idEdificio;
-
-    @Value("${edge.puerta.id}")
-    private String idPuerta;
+    private final String idEdificio;
+    private final String idPuerta;
 
     public ServicioTarjetaUsuario(
             ServicioBiometrico servicioBiometrico,
             AccesoVerificacionFacial accesoVerificacionFacial,
-            AccesoServicioCentral accesoServicioCentral) {
+            AccesoServicioCentral accesoServicioCentral,
+            @Value("${edge.edificio.id}") String idEdificio,
+            @Value("${edge.puerta.id}") String idPuerta) {
 
         this.servicioBiometrico = servicioBiometrico;
         this.accesoVerificacionFacial = accesoVerificacionFacial;
         this.accesoServicioCentral = accesoServicioCentral;
+        this.idEdificio = idEdificio;
+        this.idPuerta = idPuerta;
     }
 
     public boolean autenticarTarjeta(TarjetaDTO tarjeta) {
@@ -45,7 +44,7 @@ public class ServicioTarjetaUsuario {
 
         try {
             // Captura de rostro: se lee el vector de comprobacion del archivo JSON
-            List<Double> vectorComprobacion = servicioBiometrico.generarVectorComprobacion();
+            double[] vectorComprobacion = servicioBiometrico.generarVectorComprobacion();
 
             // Verificacion facial por sockets: referencia y comprobacion
             boolean verificado = accesoVerificacionFacial.verificar(
